@@ -1,41 +1,28 @@
-from fastapi import FastAPI, HTTPException
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-import asyncio
-import os
+from fastapi import FastAPI, HTTPException, Request
+from playwright.async_api import async_playwright
+from pydantic import BaseModel
+from typing import Optional
+import uvicorn
 
 app = FastAPI()
 
-async def fetch_html(url: str) -> str:
-    options = Options()
-    options.headless = True
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-
-    # Initialize the Chrome WebDriver
-    service = ChromeService(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-
-    try:
-        driver.get(url)
-        await asyncio.sleep(2)  # Wait for the page to load
-        html = driver.page_source
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching the page: {str(e)}")
-    finally:
-        driver.quit()
-
-    return html
+class URLRequest(BaseModel):
+    url: str
 
 @app.get("/fetch")
-async def read_item(url: str):
+async def fetch_page(request: Request):
+    url: Optional[str] = request.query_params.get("url")
     if not url:
-        raise HTTPException(status_code=400, detail="URL must be provided.")
-    html = await fetch_html(url)
-    return {"html": html}
+        raise HTTPException(status_code=400, detail="Missing 'url' parameter")
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto(url)
+        content = await page.content()  # HTML content
+        await browser.close()
+
+    return {"html": content}
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+    uvicorn.run(app, host="0.0.0.0", port=8080)

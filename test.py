@@ -1,10 +1,10 @@
 import requests
 
 # API URL (Replace with your deployed API URL)
-api_url = "https://api-rmee.onrender.com/fetch"
+api_url = "https://api-1-91g7.onrender.com"
 
 # The URL you want to fetch HTML from
-target_url = "https://www.amazon.in/d/B0CNRLCY6K"
+target_url = "https://www.amazon.in/d/B08DMY64G5"
 
 # Make a GET request to the API
 response = requests.get(api_url, params={"url": target_url})
