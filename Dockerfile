@@ -1,15 +1,14 @@
 # Use the official Python image from the Docker Hub
 FROM python:3.10-slim
+
 # Use the official Playwright image with Python support
-FROM  mcr.microsoft.com/playwright:v1.48.1-noble
-
-
+FROM mcr.microsoft.com/playwright:v1.48.1-noble
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN sudo apt-get update && sudo apt-get install -y \
     libasound2 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -54,15 +53,13 @@ COPY requirements.txt /app/
 
 # Install the dependencies specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright and its dependencies
 RUN playwright install
 RUN playwright install-deps
 RUN playwright install chromium
 RUN python -m playwright install --with-deps
 RUN DEBIAN_FRONTEND=noninteractive playwright install-deps
-
-
-
-
 
 # Copy the rest of the application code into the container at /app
 COPY . /app
