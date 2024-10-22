@@ -1,7 +1,7 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.10-slim
 # Use the official Playwright image with Python support
-FROM mcr.microsoft.com/playwright/python:v1.15.2-focal
+FROM  mcr.microsoft.com/playwright:v1.48.1-noble
 
 
 
