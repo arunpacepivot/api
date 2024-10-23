@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/playwright:v1.48.1-noble
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y \
     fonts-liberation \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Create a new user
 RUN groupadd -r playwright && useradd -r -g playwright -G audio,video playwright \
