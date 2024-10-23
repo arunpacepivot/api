@@ -1,11 +1,11 @@
-# Use the official Playwright image with Python support (this already has Python pre-installed)
-FROM mcr.microsoft.com/playwright:v1.48.1-noble
+# Use the official Ubuntu image as the base
+FROM ubuntu:20.04
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies and ensure apt-get works correctly
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libasound2 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -40,24 +40,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python and pip (if not already included)
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Create a new user
+# Install Playwright dependencies and browser binaries
+RUN pip3 install --no-cache-dir playwright && \
+    playwright install-deps && \
+    playwright install chromium
+
+# Create a new user for Playwright
 RUN groupadd -r playwright && useradd -r -g playwright -G audio,video playwright \
     && mkdir -p /home/playwright \
     && chown -R playwright:playwright /home/playwright
 
-# Copy the requirements.txt file into the container at /app
+# Copy the requirements.txt file into the container
 COPY requirements.txt /app/
 
-# Install the dependencies specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies specified in requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Install Playwright and its dependencies
-RUN playwright install
-RUN playwright install-deps
-RUN playwright install chromium
-
-# Copy the rest of the application code into the container at /app
+# Copy the rest of the application code into the container
 COPY . /app
 
 # Expose port 8080 for the FastAPI application
