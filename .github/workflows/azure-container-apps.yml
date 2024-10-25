@@ -44,7 +44,7 @@ jobs:
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         run: |
-          RESOURCE_GROUP="myResourceGroup"
+          RESOURCE_GROUP="api"
           CONTAINER_APP_ENV="myContainerAppEnv"
           CONTAINER_APP_NAME="myFastAPIApp"
 
@@ -53,6 +53,7 @@ jobs:
             --name $CONTAINER_APP_ENV \
             --resource-group $RESOURCE_GROUP \
             --location eastus
+            --no-monitoring
 
           # Deploy the container image to Azure Container Apps
           az containerapp create \
