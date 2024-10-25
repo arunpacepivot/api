@@ -1,0 +1,69 @@
+name: CI/CD for FastAPI with Playwright to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from GitHub repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Azure CLI using Service Principal
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Log in to Azure Container Registry
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+
+      # Build and tag Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.AZURE_CONTAINER_REGISTRY }}/fastapi-playwright:latest .
+
+      # Push Docker image to Azure Container Registry
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ secrets.AZURE_CONTAINER_REGISTRY }}/fastapi-playwright:latest
+
+      # Deploy to Azure Container Apps
+      - name: Deploy to Azure Container Apps
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          RESOURCE_GROUP="myResourceGroup"
+          CONTAINER_APP_ENV="myContainerAppEnv"
+          CONTAINER_APP_NAME="myFastAPIApp"
+
+          # Ensure Container App Environment exists
+          az containerapp env create \
+            --name $CONTAINER_APP_ENV \
+            --resource-group $RESOURCE_GROUP \
+            --location eastus
+
+          # Deploy the container image to Azure Container Apps
+          az containerapp create \
+            --name $CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --environment $CONTAINER_APP_ENV \
+            --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/fastapi-playwright:latest \
+            --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
+            --registry-username $ACR_USERNAME \
+            --registry-password $ACR_PASSWORD \
+            --target-port 8080 \
+            --ingress 'external' \
+            --query 'configuration.ingress.fqdn' \
+            --output tsv
