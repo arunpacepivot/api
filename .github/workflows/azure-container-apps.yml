@@ -57,8 +57,7 @@ jobs:
           az containerapp env create \
             --name $CONTAINER_APP_ENV \
             --resource-group $RESOURCE_GROUP \
-            --location eastus \
-            --no-monitoring
+            --location eastus
 
           # Deploy the container image to Azure Container Apps
           az containerapp create \
