@@ -45,8 +45,8 @@ jobs:
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         run: |
           RESOURCE_GROUP="api"
-          CONTAINER_APP_ENV="myContainerAppEnv"
-          CONTAINER_APP_NAME="myFastAPIApp"
+          CONTAINER_APP_ENV="mycontainerappenv"
+          CONTAINER_APP_NAME="myfastapiapp"
           REGISTRY_NAME="listerapi"
 
           # Get the registry credentials
