@@ -47,12 +47,17 @@ jobs:
           RESOURCE_GROUP="api"
           CONTAINER_APP_ENV="myContainerAppEnv"
           CONTAINER_APP_NAME="myFastAPIApp"
+          REGISTRY_NAME="listerapi"
+
+          # Get the registry credentials
+          ACR_PASSWORD=$(az acr credential show -n $REGISTRY_NAME --query "passwords[0].value" -o tsv)
+          ACR_USERNAME=$REGISTRY_NAME
 
           # Ensure Container App Environment exists
           az containerapp env create \
             --name $CONTAINER_APP_ENV \
             --resource-group $RESOURCE_GROUP \
-            --location eastus
+            --location eastus \
             --no-monitoring
 
           # Deploy the container image to Azure Container Apps
